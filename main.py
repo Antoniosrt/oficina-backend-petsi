@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.controllers import (
     usuario_controller,
     endereco_controller,
@@ -11,6 +12,13 @@ from app.controllers import (
 app = FastAPI(
     title="Pet lojaa",
     
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir todas as origens (ajuste conforme necessário)
+    allow_methods=["*"],  # Permitir todos os métodos HTTP
+    allow_headers=["*"],  # Permitir todos os cabeçalhos
 )
 
 app.include_router(usuario_controller.router)

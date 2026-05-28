@@ -55,4 +55,4 @@ CREATE TABLE item_compra (
     subtotal DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (id_compra) REFERENCES compra(id_compra),
     FOREIGN KEY (id_produto) REFERENCES produto(id_produto)
-)
+);

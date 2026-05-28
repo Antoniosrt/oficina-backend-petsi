@@ -6,6 +6,9 @@ def get_connection():
         host="localhost",
         database="loja",
         user="postgres",
-        password="30abril01",
+        password="admin",
         port=5432
     )
+
+def get_cursor(conn):
+    return conn.cursor(cursor_factory=RealDictCursor)
