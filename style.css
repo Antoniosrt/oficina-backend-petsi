@@ -1,0 +1,54 @@
+
+* { box-sizing: border-box; font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+
+body { background-color: #f0f2f5; padding: 20px; }
+
+h2 { margin-bottom: 15px; color: #333; }
+
+.main-layout {
+    /**ATIVA O FLEX PRA PODER ALINHAR OS ITENS COMO QUISER*/
+    display: flex; 
+    gap: 20px;
+    max-width: 1200px;
+}
+
+/* Seções */
+.section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px; /* [cite: 700, 705] */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.produtos-area { flex: 2; } /* lado maior para a vitrine, como se ela estivesse ocupando 2 espaços */
+
+/* area do carrinha*/
+.carrinho-area { flex: 1; border-left: 4px solid #00796b; } /* Lado menor */
+
+/* Cards de Produto */
+.produto-card {
+    display: flex; /* [cite: 752] */
+    justify-content: space-between; /* [cite: 753, 754] */
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.produto-card:last-child { border-bottom: none; }
+
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+
+.btn-add { background-color: #28a745; color: white; }
+.btn-del { background-color: #dc3545; color: white; }
+.btn-cadastrar { background-color: #00796b; color: white; margin-top: 10px; }
+
+/* Responsividade: em celulares vira uma coluna só */
+@media (max-width: 768px) {
+    .main-layout { flex-direction: column; } /* [cite: 758, 761, 786] */
+}

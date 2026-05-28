@@ -1,0 +1,196 @@
+<!-- cabecalho padrao do html -->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>E-commerce PET-SI</title>
+    <!--nao esquecer do style-->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--ir para o css criar o main-layout-->
+    <div class="main-layout">
+        <!--ir pro css criar os produtos-area-->
+        <div class="section produtos-area">
+            <h2>Novo Produto</h2>
+            <!--o flex só eh aplicado para seus filhos mas n pros netos-->
+            <div style="display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;">
+                
+                <input type="number" id="categoriaProd" placeholder="ID Categoria">
+                <input type="text" id="nomeProd" placeholder="Nome">
+                <input type="text" id="descricaoProd" placeholder="Descricao">
+                <input type="number" id="precoProd" placeholder="Preço">
+                <input type="number" id="estoqueProd" placeholder="Estoque">
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="ativoProd" checked>
+                    Ativo
+                </label>
+                <!--fazer o botao de cadastro sem o @click-->
+                <button class="btn-cadastrar" onclick="cadastrarNoBanco()">Cadastrar</button>
+
+                <!--cadastrar algo e mostrar no json-->
+            </div>
+
+            <!--fazer algo pra ver os produtos-->
+            <h2>Vitrine de Produtos</h2>
+            <!--normlamente em framework tem html que criam algo mais direto dentor da div com for de cada item criar um card por exemplo-->
+            <div id="vitrine">
+                <!--por enquanto vazia, desenhar no script-->
+                </div>
+                <!--se eu adicionr um produto nao vai aparece entao preciso colocar pra att-->
+        </div>
+        
+
+        <!-- seção do carrinho -->
+        <div class="section carrinho-area">
+            <h2> Meu Carrinho</h2>
+            <!-- itens do carrinho -->
+            <div id="itens-carrinho">
+                <p style="color: gray;">O carrinho está vazio.</p>
+            </div>
+            <hr style="margin: 15px 0;"> <!-- linha -->
+            <h3>Total: R$ <span id="total-carrinho">0.00</span></h3>
+        </div>
+    </div>
+</body>
+</html>
+
+
+    <script>
+        //cria uma cont da api pq ela pode ser usada mais vezes
+        const API_URL = "http://127.0.0.1:8000/produtos/";
+        let carrinhoLocal = []; // declara o vetor do carrinho
+
+        async function carregarVitrine() {
+            //cria um try que ele vai tentar executar o que ta aqui dentro, e se em qualquer momento der erro 
+            try {
+                //ele vai no nosso server em produtos, vem como um texto gigante
+                const resposta = await fetch(API_URL);
+                //aqui a gente organiza ele transformando em json pra ficar em formato de lista
+                const produtos = await resposta.json();
+                //dentor da dom que eh a pagina procura o id vitrine onde estacionar
+                const container = document.getElementById('vitrine');
+                //vamos esvaziar aquele lugar pra colocar nossos produtos
+                //ou seja toda vez que a gente carregar a vitrine vai vir vazia primeiro
+                container.innerHTML = "";
+
+                produtos.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'produto-card';
+                    card.innerHTML = `
+                        <div>
+                            <strong>${p.nome}</strong><br>
+                            <small>R$ ${parseFloat(p.preco).toFixed(2)}</small><br>
+                            <small>Estoque: ${p.estoque}</small><br>
+                            <small>Categoria: ${p.id_categoria ?? "sem categoria"}</small><br>
+                            <small>${p.descricao ?? ""}</small>
+                        </div>
+                        <button class="btn-add" onclick="adicionarAoCarrinho('${p.nome}', ${p.preco})">
+                            Adicionar
+                        </button>
+                    `;
+                    //aqui ele pendura o filho, é usado pra adicionar um nó.
+                    container.appendChild(card);
+                });
+            }
+            //vai pegar com o cathc e mostrar no console
+            catch (err) {
+                console.error("Erro ao carregar banco. O json-server está rodando?", err);
+            }
+        }
+
+        //cria uma função async, o que é async? 
+        async function cadastrarNoBanco() {
+            //cria a constante nome  que vai receber o nome do prod q digitamos
+            const id_categoria = document.getElementById('categoriaProd').value;
+            const nome = document.getElementById('nomeProd').value;
+            const descricao = document.getElementById('descricaoProd').value;
+            const preco = document.getElementById('precoProd').value;
+            const estoque = document.getElementById('estoqueProd').value;
+            const ativo = document.getElementById('ativoProd').checked;
+
+            //verificação se os dois foram preenchidos
+            if(!nome || !preco || !estoque) return alert("Preencha nome, preco e estoque!");
+
+            //vai pra cima e cria o const api que vai ser nossa conexão com o banco 
+            //await significa que o sistema vai esperar tu postar no banco pra depois continuar
+            await fetch(API_URL, {
+                //post pois estamos criando algo novo postando algo
+                method: 'POST',
+                //informa o que ta sendo enviado, o tipo do conteudo é um json
+                headers: { 'Content-Type': 'application/json' },
+                //vai empacotar do jeito q nosso json espera, o parse garante que seja enviado como numero JS nao eh tipado tudo vem como string
+                body: JSON.stringify({
+                    id_categoria: id_categoria ? parseInt(id_categoria) : null,
+                    nome,
+                    descricao: descricao || null,
+                    preco: parseFloat(preco),
+                    estoque: parseInt(estoque),
+                    ativo
+                })
+            });
+
+            //depois de cadastrar no banco vai deixar vazio de novo
+            document.getElementById('categoriaProd').value = "";
+            document.getElementById('nomeProd').value = "";
+            document.getElementById('descricaoProd').value = "";
+            document.getElementById('precoProd').value = "";
+            document.getElementById('estoqueProd').value = "";
+            document.getElementById('imagemProd').value = "";
+            document.getElementById('ativoProd').checked = true;
+
+            //fazer isso dps
+            carregarVitrine();
+        }
+
+        // pega o novo item, cria um objeto e empurra pro final da lista
+        function adicionarAoCarrinho(nome, preco) {
+            carrinhoLocal.push({ nome, preco });
+            // atualiza a interface
+            atualizarInterfaceCarrinho();
+        }
+        // atraves do indice na lista remove o item do carrinho
+        function removerDoCarrinho(index) {
+            carrinhoLocal.splice(index, 1); 
+            // atualiza a interface
+            atualizarInterfaceCarrinho();
+        }
+
+        function atualizarInterfaceCarrinho() {
+            const container = document.getElementById('itens-carrinho'); // acha a div em q os produtos vao aparecer
+            const totalTxt = document.getElementById('total-carrinho'); // acha o local em que o total em dinheiro aparece
+            
+            // verifica se o carrinho esta vazio
+            if(carrinhoLocal.length === 0) {
+                container.innerHTML = "<p style='color: gray;'>O carrinho está vazio.</p>";
+                totalTxt.textContent = "0.00";
+                return;
+            }
+
+            // limpa a tela do carrinho para nao duplicar o que ja estava la
+            container.innerHTML = "";
+            // variavel para a soma
+            let soma = 0;
+
+            // para cada item da lista estas ações
+            carrinhoLocal.forEach((item, index) => {
+                soma += item.preco; // adiciona preço do item no total
+                // cria uma nova caixa para produto c os estilos
+                const div = document.createElement('div');
+                div.className = 'produto-card';
+                div.style.padding = "5px 0";
+                // botao x de remover o carrinho
+                div.innerHTML = `
+                    <span>${item.nome}</span>
+                    <button class="btn-del" onclick="removerDoCarrinho(${index})">x</button>
+                `;
+                // coloca a caixa na tela
+                container.appendChild(div);
+            });
+            // atualiza o valor total
+            totalTxt.textContent = soma.toFixed(2);
+        }
+
+        carregarVitrine();
+    </script>
